@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>結果</h1>
+    {% for item in item_list %}
+        <p>{{ item.lesson.answer }}</p>
+        <p>{{ item.word.english }}</p>
+        <p>{{ item.word.japanese }}</p>
+    {% endfor %}
+    <a href="{% url 'type-words' %}">始める</a>
+{% endblock content %}

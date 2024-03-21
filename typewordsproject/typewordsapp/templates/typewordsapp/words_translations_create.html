@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}単語登録{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="登録する">
+    </form>
+    <a href="{% url 'list-word' %}">一覧へ戻る</a>
+{% endblock content%}

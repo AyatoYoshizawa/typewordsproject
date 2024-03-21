@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}単語修正{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">修正する</button>
+    </form>
+    <a href="{% url 'list-word' %}">一覧へ戻る</a>
+{% endblock content %}

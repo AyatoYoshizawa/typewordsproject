@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>{{ current_word.japanese }}</h1>
+    <h2>{{ current_lesson.num_of_lesson }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="提出する">
+    </form>
+{% endblock content %}
