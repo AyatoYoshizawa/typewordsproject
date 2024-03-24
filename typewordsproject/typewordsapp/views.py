@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, DeleteView, UpdateView
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db import models
 from .models import Words_Translations
 from .models import Lesson
@@ -56,6 +57,7 @@ def render_question(request, num):
     }
     return render(request, 'typewordsapp/type_words.html', context)
 
+@login_required
 def start_view(request):
     user = request.user
     request.session['num'] = start_lesson(user)
