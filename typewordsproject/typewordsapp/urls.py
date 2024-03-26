@@ -10,4 +10,6 @@ urlpatterns = [
     path('typewords/', views.type_words_view, name='type-words'),
     path('result/', views.result_view, name='result'),
     path('start/', views.start_view, name='start'),
+    path('list/', views.ListListView.as_view(), name='list-list'),
+    path('list/create', views.CreateListView.as_view(), name='create-list'),
 ]

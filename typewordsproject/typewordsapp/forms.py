@@ -5,7 +5,7 @@ class AnswerForm(forms.Form):
         max_length=100,
         widget=forms.TextInput(attrs={
             'autofocus': 'autofocus',
-            'class': 'form-control form-control-lg',
+            'class': 'form-control form-control-lg bg-soft-dark',
             'placeholder': '回答を入力してください',
             'autocomplete': 'off',
         }),

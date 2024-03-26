@@ -4,8 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from .models import Words_Translations
-from .models import Lesson
+from .models import Words_Translations, Lesson, List
 
 from pprint import pprint
 
@@ -16,10 +15,11 @@ from django.db import transaction
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', level=logging.DEBUG)
-# Create your views here.
+
 def index_view(request):
     return render(request, 'typewordsapp/index.html')
 
+# type_words_viewに関する関数
 def get_next_lesson(num):
     return Lesson.objects.filter(result=None, num_of_lesson=num).first()
 
@@ -110,6 +110,25 @@ def result_view(request):
     }
     return render(request, 'typewordsapp/result.html', context)
 
+# ListテーブルのCRUD
+class ListListView(LoginRequiredMixin, ListView):
+    template_name = 'typewordsapp/list_list.html'
+    model = List
+
+class CreateListView(LoginRequiredMixin, CreateView):
+    template_name = 'typewordsapp/list_create.html'
+    model = List
+    fields = ('name',)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        return reverse('list-list')
+
+# Words_TranslationsテーブルのCRUD
 class ListWordView(LoginRequiredMixin, ListView):
     template_name = 'typewordsapp/words_translations_list.html'
     model = Words_Translations
@@ -117,9 +136,10 @@ class ListWordView(LoginRequiredMixin, ListView):
 class CreateWordView(LoginRequiredMixin, CreateView):
     template_name = 'typewordsapp/words_translations_create.html'
     model = Words_Translations
-    fields = ('english', 'japanese')
+    fields = ('english', 'japanese',)
 
     def form_valid(self, form):
+        form.instance.user = self.request.user
         response = super().form_valid(form)
         return response
     
@@ -134,5 +154,5 @@ class DeleteWordView(LoginRequiredMixin, DeleteView):
 class UpdateWordView(LoginRequiredMixin, UpdateView):
     template_name = 'typewordsapp/words_translations_update.html'
     model = Words_Translations
-    fields = ('english', 'japanese')
+    fields = ('english', 'japanese',)
     success_url = reverse_lazy('list-word')
