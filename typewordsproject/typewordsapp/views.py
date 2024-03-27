@@ -4,7 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from .models import Words_Translations, Lesson, List
+from .models import *
 
 from pprint import pprint
 
@@ -23,11 +23,11 @@ def index_view(request):
 def get_next_lesson(num):
     return Lesson.objects.filter(result=None, num_of_lesson=num).first()
 
-def get_word_by_id(lesson) -> Words_Translations:
-    return Words_Translations.objects.filter(id=lesson.word_translation.id).first()
+def get_word_by_id(lesson) -> Word:
+    return Word.objects.filter(id=lesson.word_translation.id).first()
 
 def start_lesson(user):
-    word_list = Words_Translations.objects.order_by(Random()).all()[:10]
+    word_list = Word.objects.order_by(Random()).all()[:10]
     lesson_objects = Lesson.objects.aggregate(max_value=models.Max('num_of_lesson'))
     if lesson_objects['max_value'] == None:
         num = 1
@@ -100,7 +100,7 @@ def result_view(request):
     item_list = []
     lesson_list = Lesson.objects.filter(num_of_lesson=num)
     for lesson in lesson_list:
-        word = Words_Translations.objects.filter(id=lesson.word_translation.id).first()
+        word = Word.objects.filter(id=lesson.word_translation.id).first()
         item_list.append({
             'lesson' : lesson,
             'word' : word,
@@ -110,36 +110,60 @@ def result_view(request):
     }
     return render(request, 'typewordsapp/result.html', context)
 
-# ListテーブルのCRUD
+# WordListテーブルのCRUD
 class ListListView(LoginRequiredMixin, ListView):
     template_name = 'typewordsapp/list_list.html'
-    model = List
+    model = WordList
 
 class CreateListView(LoginRequiredMixin, CreateView):
     template_name = 'typewordsapp/list_create.html'
-    model = List
-    fields = ('name',)
+    model = WordList
+    fields = ('list_name',)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['list_name'].widget.attrs['autofocus'] = True
+        return form
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        form.instance.created_by = self.request.user
         response = super().form_valid(form)
         return response
 
     def get_success_url(self):
         return reverse('list-list')
 
-# Words_TranslationsテーブルのCRUD
+class UpdateListView(LoginRequiredMixin, UpdateView):
+    template_name = 'typewordsapp/list_update.html'
+    model = WordList
+    fields = ('list_name',)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['list_name'].widget.attrs['autofocus'] = True
+        return form
+
+    def get_success_url(self):
+        return reverse_lazy('list-list')
+    
+class DeleteListView(LoginRequiredMixin, DeleteView):
+    template_name = 'typewordsapp/list_confirm_delete.html'
+    model = WordList
+    fields = ('list_name',)
+    success_url = reverse_lazy('list-list')
+
+# WordテーブルのCRUD
 class ListWordView(LoginRequiredMixin, ListView):
-    template_name = 'typewordsapp/words_translations_list.html'
-    model = Words_Translations
+    template_name = 'typewordsapp/word_list.html'
+    model = Word
 
 class CreateWordView(LoginRequiredMixin, CreateView):
-    template_name = 'typewordsapp/words_translations_create.html'
-    model = Words_Translations
+    template_name = 'typewordsapp/word_create.html'
+    model = Word
     fields = ('english', 'japanese',)
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        form.instance.created_by = self.request.user
         response = super().form_valid(form)
         return response
     
@@ -147,12 +171,12 @@ class CreateWordView(LoginRequiredMixin, CreateView):
         return reverse('create-word')
 
 class DeleteWordView(LoginRequiredMixin, DeleteView):
-    template_name = 'typewordsapp/words_translations_confirm_delete.html'
-    model = Words_Translations
+    template_name = 'typewordsapp/Word_confirm_delete.html'
+    model = Word
     success_url = reverse_lazy('list-word')
 
 class UpdateWordView(LoginRequiredMixin, UpdateView):
-    template_name = 'typewordsapp/words_translations_update.html'
-    model = Words_Translations
+    template_name = 'typewordsapp/Word_update.html'
+    model = Word
     fields = ('english', 'japanese',)
     success_url = reverse_lazy('list-word')

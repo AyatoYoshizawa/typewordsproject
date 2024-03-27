@@ -1,18 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <h1 class="text-center mt-5">トップページ</h1>
 <div class="text-center mt-5">
     <a id="start-link" href="{% url 'start' %}" class="btn btn-primary btn-lg">単語テストを始める (Enter)</a>
 </div>
-<script>
-    // キーボードのEnterが押されたらid=start-linkのaタグをクリック
-    const startLink = document.getElementById('start-link');
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            startLink.click();
-        }
-    });
-</script>
+<script defer src="{% static 'index.js' %}"></script>
 {% endblock content %}

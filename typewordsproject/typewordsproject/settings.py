@@ -126,6 +126,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# 開発中は STATICFILES_DIRS を使う
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# 本番環境では STATIC_ROOT を使う
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -135,14 +143,4 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 SESSION_COOKIE_AGE = 3600  # 1時間
 
-# settings.py
 
-STATIC_URL = '/static/'
-
-# 開発中は STATICFILES_DIRS を使う
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# 本番環境では STATIC_ROOT を使う
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
