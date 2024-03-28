@@ -3,16 +3,20 @@
 {% block title %}単語一覧{% endblock %}
 
 {% block content %}
-    {% for item in object_list %}
+    <p>{{ selected_word_list.list_name }}</p>
+    <a href="{% url 'word-list-update' word_list_pk=selected_word_list.pk %}" class="btn btn-primary btn-lg my-5">リストの名前を変更</a>
+    <a href="{% url 'word-create' word_list_pk=selected_word_list.pk %}"class="btn btn-primary btn-lg my-5">単語を追加</a>
+
+    {% for object in object_list %}
     <div class="card">
         <div class="card-header">
-            {{ item.id }}
+            {{ object.id }}
         </div>
         <div class="card-body">
-            <h5 class="card-title">{{ item.english }}</h5>
-            <p class="card-text">{{ item.japanese }}</p>
-            <a href="{% url 'update-word' item.pk %}" class="btn btn-primary">編集する</a>
-            <a href="{% url 'delete-word' item.pk %}" class="btn btn-primary">削除する</a>
+            <h5 class="card-title">{{ objecst.english }}</h5>
+            <p class="card-text">{{ object.japanese }}</p>
+            <a href="{% url 'word-update' object.pk %}" class="btn btn-primary">編集する</a>
+            <a href="{% url 'word-delete' object.pk %}" class="btn btn-primary">削除する</a>
         </div>
     </div>
     {% endfor %}

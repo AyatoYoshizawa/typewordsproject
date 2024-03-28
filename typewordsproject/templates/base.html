@@ -13,7 +13,7 @@
     <nav class="navbar navbar-dark bg-primary sticky-top">
         <div class="navbar-nav d-flex flex-row">
             <a class="nav-link mx-3" href="{% url 'index' %}">トップ</a>
-            <a class="nav-link mx-3" href="{% url 'list-list' %}">単語リスト一覧</a>
+            <a class="nav-link mx-3" href="{% url 'word-list-list' %}">単語リスト一覧</a>
         </div>
         <nav class="navbar-nav d-flex flex-row">
             {% if request.user.is_authenticated %}

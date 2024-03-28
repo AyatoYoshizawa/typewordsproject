@@ -111,12 +111,12 @@ def result_view(request):
     return render(request, 'typewordsapp/result.html', context)
 
 # WordListテーブルのCRUD
-class ListListView(LoginRequiredMixin, ListView):
-    template_name = 'typewordsapp/list_list.html'
+class WordListListView(LoginRequiredMixin, ListView):
+    template_name = 'typewordsapp/word_list_list.html'
     model = WordList
 
-class CreateListView(LoginRequiredMixin, CreateView):
-    template_name = 'typewordsapp/list_create.html'
+class WordListCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'typewordsapp/word_list_create.html'
     model = WordList
     fields = ('list_name',)
 
@@ -133,8 +133,8 @@ class CreateListView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('list-list')
 
-class UpdateListView(LoginRequiredMixin, UpdateView):
-    template_name = 'typewordsapp/list_update.html'
+class WordListUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = 'typewordsapp/word_list_update.html'
     model = WordList
     fields = ('list_name',)
 
@@ -146,18 +146,40 @@ class UpdateListView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('list-list')
     
-class DeleteListView(LoginRequiredMixin, DeleteView):
-    template_name = 'typewordsapp/list_confirm_delete.html'
+class WordListDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = 'typewordsapp/word_list_confirm_delete.html'
     model = WordList
     fields = ('list_name',)
     success_url = reverse_lazy('list-list')
 
 # WordテーブルのCRUD
-class ListWordView(LoginRequiredMixin, ListView):
+class WordListView(LoginRequiredMixin, ListView):
     template_name = 'typewordsapp/word_list.html'
     model = Word
 
-class CreateWordView(LoginRequiredMixin, CreateView):
+    # URLのパスパラメータ(現在選択している単語リストのID)をセッションのword_list_pkに保存
+    def get(self, request, *args, **kwargs):
+        word_list_pk = int(kwargs.get('word_list_pk'))
+        self.request.session['word_list_pk'] = word_list_pk
+        return super().get(request, *args, **kwargs)
+
+    # Wordテーブルから、word_list_idフィールドがセッションのword_list_pkと一致するWordレコードを取得
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        word_list_pk = self.request.session.get('word_list_pk')
+        queryset = queryset.filter(word_list_id=word_list_pk)
+        return queryset
+    
+    # 現在選択している単語リストのWordListレコードをセッションのword_list_idでフィルターをかけて1件取得
+    # 単語リストの名前を上に表示する為
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        word_list_pk = self.request.session.get('word_list_pk')
+        selected_word_list =  WordList.objects.filter(id='word_list_pk').first()
+        context['selected_word_list'] = selected_word_list
+        return context
+
+class WordCreateView(LoginRequiredMixin, CreateView):
     template_name = 'typewordsapp/word_create.html'
     model = Word
     fields = ('english', 'japanese',)
@@ -169,14 +191,14 @@ class CreateWordView(LoginRequiredMixin, CreateView):
     
     def get_success_url(self):
         return reverse('create-word')
-
-class DeleteWordView(LoginRequiredMixin, DeleteView):
-    template_name = 'typewordsapp/Word_confirm_delete.html'
-    model = Word
-    success_url = reverse_lazy('list-word')
-
-class UpdateWordView(LoginRequiredMixin, UpdateView):
+    
+class WordUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'typewordsapp/Word_update.html'
     model = Word
     fields = ('english', 'japanese',)
-    success_url = reverse_lazy('list-word')
+    success_url = reverse_lazy('word-list')
+
+class WordDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = 'typewordsapp/Word_confirm_delete.html'
+    model = Word
+    success_url = reverse_lazy('word-list')

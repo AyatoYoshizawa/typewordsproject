@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}リスト一覧{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <a href="{% url 'word-list-create' %}" class="btn btn-primary btn-lg my-5">リストを作成する</a>
+    </div>
+    {% for object in object_list %}
+    <div class="card bg-dark text-light">
+        <div class="card-header">
+            {{ object.id }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ object.list_name }}</h5>
+            <a href="{% url 'word-list' word_list_pk=object.pk %}" class="btn btn-primary btn-sm">編集</a>
+        </div>
+    </div>
+    {% endfor %}
+{% endblock content %}
