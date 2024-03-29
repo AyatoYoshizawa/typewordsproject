@@ -20,12 +20,6 @@ def index_view(request):
     return render(request, 'typewordsapp/index.html')
 
 # type_words_viewに関する関数
-def get_next_lesson(num):
-    return Lesson.objects.filter(result=None, num_of_lesson=num).first()
-
-def get_word_by_id(lesson) -> Word:
-    return Word.objects.filter(id=lesson.word_translation.id).first()
-
 def start_lesson(user):
     word_list = Word.objects.order_by(Random()).all()[:10]
     lesson_objects = Lesson.objects.aggregate(max_value=models.Max('num_of_lesson'))
@@ -39,6 +33,12 @@ def start_lesson(user):
             obj.save()
     logging.debug(num)
     return num
+
+def get_next_lesson(num):
+    return Lesson.objects.filter(result=None, num_of_lesson=num).first()
+
+def get_word_by_id(lesson) -> Word:
+    return Word.objects.filter(id=lesson.word_translation.id).first()
 
 def render_question(request, num):
     current_lesson = get_next_lesson(num)
@@ -115,6 +115,12 @@ class WordListListView(LoginRequiredMixin, ListView):
     template_name = 'typewordsapp/word_list_list.html'
     model = WordList
 
+    # 自分が作成したデータのみを取得
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(created_by=self.request.user.id)
+        return queryset
+
 class WordListCreateView(LoginRequiredMixin, CreateView):
     template_name = 'typewordsapp/word_list_create.html'
     model = WordList
@@ -137,14 +143,23 @@ class WordListUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'typewordsapp/word_list_update.html'
     model = WordList
     fields = ('list_name',)
+    pk_url_kwarg = 'word_list_pk'
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['list_name'].widget.attrs['autofocus'] = True
         return form
 
+    # 一覧に戻るリンクでパスパラメータword_list_pkを指定するためにコンテキストとしてword_list_pkを渡す
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        word_list_pk = self.request.session.get('word_list_pk')
+        context['word_list_pk'] = word_list_pk
+        return context
+
     def get_success_url(self):
-        return reverse_lazy('list-list')
+        word_list_pk = self.request.session.get('word_list_pk')
+        return reverse_lazy('word-list', kwargs={'word_list_pk': word_list_pk})
     
 class WordListDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'typewordsapp/word_list_confirm_delete.html'
@@ -167,7 +182,7 @@ class WordListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         word_list_pk = self.request.session.get('word_list_pk')
-        queryset = queryset.filter(word_list_id=word_list_pk)
+        queryset = queryset.filter(word_list_id=word_list_pk, created_by=self.request.user.id)
         return queryset
     
     # 現在選択している単語リストのWordListレコードをセッションのword_list_idでフィルターをかけて1件取得
@@ -175,7 +190,7 @@ class WordListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         word_list_pk = self.request.session.get('word_list_pk')
-        selected_word_list =  WordList.objects.filter(id='word_list_pk').first()
+        selected_word_list =  WordList.objects.filter(pk=word_list_pk).first()
         context['selected_word_list'] = selected_word_list
         return context
 
@@ -184,21 +199,50 @@ class WordCreateView(LoginRequiredMixin, CreateView):
     model = Word
     fields = ('english', 'japanese',)
 
+    # created_byとword_list_idフィールドを自動で入力
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        word_list_pk = self.request.session.get('word_list_pk')
+        word_list_instance = WordList.objects.get(pk=word_list_pk)
+        form.instance.word_list_id = word_list_instance
         response = super().form_valid(form)
         return response
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        word_list_pk = self.request.session.get('word_list_pk')
+        context['word_list_pk'] = word_list_pk
+        return context
+    
     def get_success_url(self):
-        return reverse('create-word')
+        word_list_pk = self.request.session.get('word_list_pk')
+        return reverse_lazy('word-create', kwargs={'word_list_pk': word_list_pk})
     
 class WordUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'typewordsapp/Word_update.html'
     model = Word
     fields = ('english', 'japanese',)
-    success_url = reverse_lazy('word-list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        word_list_pk = self.request.session.get('word_list_pk')
+        context['word_list_pk'] = word_list_pk
+        return context
+
+    def get_success_url(self):
+        word_list_pk = self.request.session.get('word_list_pk')
+        return reverse_lazy('word-list', kwargs={'word_list_pk': word_list_pk})
 
 class WordDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'typewordsapp/Word_confirm_delete.html'
     model = Word
-    success_url = reverse_lazy('word-list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        word_list_pk = self.request.session.get('word_list_pk')
+        context['word_list_pk'] = word_list_pk
+        return context
+    
+    def get_success_url(self):
+        word_list_pk = self.request.session.get('word_list_pk')
+        return reverse_lazy('word-list', kwargs={'word_list_pk': word_list_pk})

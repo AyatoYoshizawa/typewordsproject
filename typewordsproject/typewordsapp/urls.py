@@ -4,9 +4,9 @@ from . import views
 urlpatterns = [
     path('', views.index_view, name='index'),
     path('word/<int:word_list_pk>', views.WordListView.as_view(), name='word-list'),
-    path('word/<int:word_list_pk>>create', views.WordCreateView.as_view(), name='word-create'),
-    path('word/<int:word_pk>/delete', views.WordDeleteView.as_view(), name='word-delete'),
-    path('word/<int:word_pk>/update', views.WordUpdateView.as_view(), name='word-update'),
+    path('word/<int:word_list_pk>/create', views.WordCreateView.as_view(), name='word-create'),
+    path('word/<int:pk>/delete', views.WordDeleteView.as_view(), name='word-delete'),
+    path('word/<int:pk>/update', views.WordUpdateView.as_view(), name='word-update'),
     path('typewords/', views.type_words_view, name='type-words'),
     path('result/', views.result_view, name='result'),
     path('start/', views.start_view, name='start'),

@@ -7,5 +7,5 @@
         {% csrf_token %}
         <button type="submit">{{ object.english }}を削除する</button>
     </form>
-    <a href="{% url 'list-word' %}">一覧に戻る</a>
+    <a href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧に戻る</a>
 {% endblock content %}

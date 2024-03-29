@@ -8,5 +8,5 @@
         {{ form.as_p }}
         <button type="submit">修正する</button>
     </form>
-    <a href="{% url 'list-word' %}">一覧へ戻る</a>
+    <a href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧へ戻る</a>
 {% endblock content %}
