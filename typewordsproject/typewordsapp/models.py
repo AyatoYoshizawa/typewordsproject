@@ -10,6 +10,8 @@ class Word(models.Model):
     japanese = models.CharField(max_length=100)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='word_translations')
     word_list_id = models.ForeignKey(WordList, on_delete=models.CASCADE, related_name='list')
+    times_asked = models.IntegerField(default=0)
+    times_correct = models.IntegerField(default=0)
 
 class Lesson(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lessons')

@@ -143,4 +143,4 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 SESSION_COOKIE_AGE = 3600  # 1時間
 
-
+X_FRAME_OPTIONS = 'DENY'

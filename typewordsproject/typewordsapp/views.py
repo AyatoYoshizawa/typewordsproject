@@ -8,45 +8,86 @@ from .models import *
 
 from pprint import pprint
 
-from .forms import AnswerForm
-from django.db.models.functions import Random
+from .forms import *
 
 from django.db import transaction
+from django.db.models import Case, When, Value, F, ExpressionWrapper, FloatField, Max
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', level=logging.DEBUG)
 
-def index_view(request):
-    return render(request, 'typewordsapp/index.html')
+def start_lesson(request) -> None:
+    # correct_ratio(正答率)フィールドの昇順で、指定した出題数の分だけ取得する
+    tmp_word_queryset = Word.objects.filter(created_by=request.user.id)
+    tmp_word_queryset = tmp_word_queryset.annotate(
+        correct_ratio=Case(
+            When(times_asked=0, then=Value(0)), # times_asked=0の場合はcorrect_ratio=0にする
+            default=ExpressionWrapper(
+                F('times_correct') / F('times_asked'),
+                output_field=FloatField()
+            ),
+            output_field=FloatField()
+        )
+    )
+    total_num_of_lessons = request.session.get('total_num_of_lessons')
+    word_objects = tmp_word_queryset.order_by('correct_ratio')[:total_num_of_lessons]
 
-# type_words_viewに関する関数
-def start_lesson(user):
-    word_list = Word.objects.order_by(Random()).all()[:10]
-    lesson_objects = Lesson.objects.aggregate(max_value=models.Max('num_of_lesson'))
+    # lesson_numberフィールド内の最大値を求めて、Noneだったら1で初期化。
+    # そうでなければインクリメントしてcurrent_lesson_numberに格納し、セッションに保存
+    lesson_objects = Lesson.objects.aggregate(max_value=Max('lesson_number'))
     if lesson_objects['max_value'] == None:
-        num = 1
+        current_lesson_number = 1
     else:
-        num = lesson_objects['max_value'] + 1
+        current_lesson_number = lesson_objects['max_value'] + 1    
+    request.session['current_lesson_number'] = current_lesson_number
+
+    # 取得してきたword_objectをもとにLessonレコードを作成
     with transaction.atomic():
-        for word in word_list:
-            obj = Lesson.objects.create(user=user, num_of_lesson=num, word_translation=word)
+        for word_object in word_objects:
+            obj = Lesson.objects.create(
+                created_by=request.user,
+                lesson_number=current_lesson_number,
+                word_id=word_object,
+                )
             obj.save()
-    logging.debug(num)
-    return num
 
-def get_next_lesson(num):
-    return Lesson.objects.filter(result=None, num_of_lesson=num).first()
+# トップページ
+@login_required
+def index_view(request):
+    if request.method == 'POST':
+        form = LessonConfigForm(request.POST)
+        if form.is_valid():
+            # 出題する数をフォームから受け取りセッションに保存
+            total_num_of_lessons = form.cleaned_data['max_lesson_number']
+            request.session['total_num_of_lessons'] = total_num_of_lessons
 
-def get_word_by_id(lesson) -> Word:
-    return Word.objects.filter(id=lesson.word_translation.id).first()
+            # start_lessonでレコードを作成
+            start_lesson(request)
+            return reverse_lazy('type-words')
+    else:
+        # 出題可能数の上限を取得して、それをデフォルト値と上限値に設定
+        form = LessonConfigForm()
+        max_value = Word.objects.filter(created_by=request.user.id).count()
+        form.fields['max_lesson_number'].max_value = max_value
+        form.fields['max_lesson_number'].initial = max_value
+        return render(request, 'typewordsapp/index.html', {'form': form})
 
-def render_question(request, num):
-    current_lesson = get_next_lesson(num)
+# 現在のレッスン番号かつ未回答のもので一番最初にヒットしたレコードを1件返す
+def get_next_lesson_object(current_lesson_number):
+    return Lesson.objects.filter(result=None, lesson_number=current_lesson_number).first()
+
+# 現在のLessonレコードのword_idをもとにWordレコードを1件返す
+def get_word_by_id(current_lesson):
+    return Word.objects.filter(id=current_lesson.word_id.id).first()
+
+# 現在のlesson_numberとword_idをAnswerFormのフィールドの初期値に設定
+def render_question(request, current_lesson_number):
+    current_lesson = get_next_lesson_object(current_lesson_number)
     current_word = get_word_by_id(current_lesson)
 
     initial_values = {
-        'num' : current_lesson.num_of_lesson,
-        'word_id': current_lesson.word_translation.id,
+        'current_lesson_number' : current_lesson.lesson_number,
+        'word_id': current_lesson.word_id.id,
     }
     form = AnswerForm(initial=initial_values)
 
@@ -57,50 +98,42 @@ def render_question(request, num):
     }
     return render(request, 'typewordsapp/type_words.html', context)
 
-@login_required
-def start_view(request):
-    user = request.user
-    request.session['num'] = start_lesson(user)
-    logging.debug(f"START: {request.session['num']}")
-    return redirect('type-words')
-    
+# 単語テストページ
 def type_words_view(request):
     if request.method == 'GET':
-        num = request.session.get('num')
-        logging.debug(num)
-        return render_question(request, num)
+        current_lesson_number = request.session.get('current_lesson_number')
+        return render_question(request, current_lesson_number)
        
     elif request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
-            num = request.session.get('num')
-            word_id = form.cleaned_data['word_id']
-            logging.debug(num)
-            print(word_id)
+            current_lesson_number = request.session.get('current_lesson_number')
+            current_word_id = form.cleaned_data['word_id']
 
-            lesson = Lesson.objects.filter(num_of_lesson=num, word_translation_id=word_id).first()
-            word = get_word_by_id(lesson)
+            current_lesson = Lesson.objects.filter(
+                lesson_number=current_lesson_n
+                ).first()
+            current_word = get_word_by_id(current_lesson)
 
             cleaned_inputted_ans = form.cleaned_data['inputted_ans']
-            lesson.answer = cleaned_inputted_ans
-            if word.english == cleaned_inputted_ans:
-                lesson.result = 1
+            current_lesson.answer = cleaned_inputted_ans
+            if current_word.english == cleaned_inputted_ans:
+                current_lesson.result = 1
             else:
-                lesson.result = 0
-            lesson.save()
+                current_lesson.result = 0
 
-            next_lesson = get_next_lesson(num)
+            next_lesson = get_next_lesson_object(current_lesson_number)
             if next_lesson:
                 return redirect('type-words')
             else:
                 return redirect('result')
     
 def result_view(request):
-    num = request.session.get('num')
+    current_lesson_number = request.session.get('current_lesson_number')
     item_list = []
-    lesson_list = Lesson.objects.filter(num_of_lesson=num)
+    lesson_list = Lesson.objects.filter(lesson_number=current_lesson_number)
     for lesson in lesson_list:
-        word = Word.objects.filter(id=lesson.word_translation.id).first()
+        word = Word.objects.filter(id=lesson.word_id.id).first()
         item_list.append({
             'lesson' : lesson,
             'word' : word,
