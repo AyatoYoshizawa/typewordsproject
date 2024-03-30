@@ -63,7 +63,7 @@ def index_view(request):
 
             # start_lessonでレコードを作成
             start_lesson(request)
-            return reverse_lazy('type-words')
+            return redirect('type-words')
     else:
         # 出題可能数の上限を取得して、それをデフォルト値と上限値に設定
         form = LessonConfigForm()
@@ -110,9 +110,7 @@ def type_words_view(request):
             current_lesson_number = request.session.get('current_lesson_number')
             current_word_id = form.cleaned_data['word_id']
 
-            current_lesson = Lesson.objects.filter(
-                lesson_number=current_lesson_n
-                ).first()
+            current_lesson = Lesson.objects.filter(lesson_number=current_lesson_number, answer=None)
             current_word = get_word_by_id(current_lesson)
 
             cleaned_inputted_ans = form.cleaned_data['inputted_ans']
@@ -121,6 +119,7 @@ def type_words_view(request):
                 current_lesson.result = 1
             else:
                 current_lesson.result = 0
+            current_lesson.save()
 
             next_lesson = get_next_lesson_object(current_lesson_number)
             if next_lesson:
