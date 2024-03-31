@@ -16,6 +16,8 @@ from django.db.models import Case, When, Value, F, ExpressionWrapper, FloatField
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', level=logging.DEBUG)
 
+TOTAL_NUM_OF_LESSONS = 'total_num_of_lessons'
+
 def start_lesson(request) -> None:
     # correct_ratio(正答率)フィールドの昇順で、指定した出題数の分だけ取得する
     tmp_word_queryset = Word.objects.filter(created_by=request.user.id)
@@ -29,7 +31,7 @@ def start_lesson(request) -> None:
             output_field=FloatField()
         )
     )
-    total_num_of_lessons = request.session.get('total_num_of_lessons')
+    total_num_of_lessons = request.session.get(TOTAL_NUM_OF_LESSONS)
     word_objects = tmp_word_queryset.order_by('correct_ratio')[:total_num_of_lessons]
 
     # lesson_numberフィールド内の最大値を求めて、Noneだったら1で初期化。
@@ -70,7 +72,11 @@ def index_view(request):
         max_value = Word.objects.filter(created_by=request.user.id).count()
         form.fields['max_lesson_number'].max_value = max_value
         form.fields['max_lesson_number'].initial = max_value
-        return render(request, 'typewordsapp/index.html', {'form': form})
+        context = {
+            'form': form,
+            'max_value': max_value,
+        }
+        return render(request, 'typewordsapp/index.html', context)
 
 # 現在のレッスン番号かつ未回答のもので一番最初にヒットしたレコードを1件返す
 def get_next_lesson_object(current_lesson_number):
@@ -78,6 +84,7 @@ def get_next_lesson_object(current_lesson_number):
 
 # 現在のLessonレコードのword_idをもとにWordレコードを1件返す
 def get_word_by_id(current_lesson):
+    logging.debug(current_lesson)
     return Word.objects.filter(id=current_lesson.word_id.id).first()
 
 # 現在のlesson_numberとword_idをAnswerFormのフィールドの初期値に設定
@@ -110,11 +117,12 @@ def type_words_view(request):
             current_lesson_number = request.session.get('current_lesson_number')
             current_word_id = form.cleaned_data['word_id']
 
-            current_lesson = Lesson.objects.filter(lesson_number=current_lesson_number, answer=None)
+            current_lesson = Lesson.objects.filter(lesson_number=current_lesson_number, answer=None).first()
             current_word = get_word_by_id(current_lesson)
 
             cleaned_inputted_ans = form.cleaned_data['inputted_ans']
             current_lesson.answer = cleaned_inputted_ans
+            # 1は正解、0が不正解
             if current_word.english == cleaned_inputted_ans:
                 current_lesson.result = 1
             else:
@@ -137,6 +145,12 @@ def result_view(request):
             'lesson' : lesson,
             'word' : word,
         })
+        # 出題した回数と正解した回数を更新
+        # 正解の場合のみtimes_correctをインクリメント
+        word.times_asked += 1
+        if lesson.result == 1:
+            word.times_correct += 1
+        word.save()
     context = {
         'item_list' : item_list,
     }

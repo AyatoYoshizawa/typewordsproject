@@ -6,6 +6,7 @@
 <div class="text-center mt-5">
     <form method="post">
         <button id="start-link" type="submit" class="btn btn-primary btn-lg">単語テストを始める</button>
+        <p>出題数の上限: {{ max_value }}</p>
         {% csrf_token %}
         {{ form.as_p }}
     </form>
