@@ -1,0 +1,23 @@
+.bg-hard-dark {
+    background-color: #11111170;
+}
+
+.border-buttom-gray {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.228);
+}
+
+.border-gray {
+    border: 1px solid gray;
+    border-radius: 10px;
+}
+
+.btn-primary {
+    background-color: #6699CC;
+    border-color: #6699CC;
+
+}
+
+.btn-primary:hover {
+    background-color: #6699CC;
+    border-color: white;
+}

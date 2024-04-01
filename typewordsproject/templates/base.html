@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TypeWords</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'base.css' %}">
+    <link rel="stylesheet" href="{% static 'custom.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </head>
 <body class="bg-dark text-light">
-    <nav class="navbar navbar-dark bg-primary sticky-top">
+    <nav class="navbar navbar-dark sticky-top bg-hard-dark border-buttom-gray">
         <div class="navbar-nav d-flex flex-row">
             <a class="nav-link mx-3" href="{% url 'index' %}">トップ</a>
             <a class="nav-link mx-3" href="{% url 'word-list-list' %}">単語リスト一覧</a>

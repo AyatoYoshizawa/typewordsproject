@@ -245,6 +245,12 @@ class WordCreateView(LoginRequiredMixin, CreateView):
     model = Word
     fields = ('english', 'japanese',)
 
+    # englishフィールドの入力欄にautofocus属性を適用
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['english'].widget.attrs['autofocus'] = True
+        return form
+
     # created_byとword_list_idフィールドを自動で入力
     def form_valid(self, form):
         form.instance.created_by = self.request.user
