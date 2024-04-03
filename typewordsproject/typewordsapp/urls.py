@@ -12,5 +12,5 @@ urlpatterns = [
     path('list/', views.WordListListView.as_view(), name='word-list-list'),
     path('list/create', views.WordListCreateView.as_view(), name='word-list-create'),
     path('list/<int:word_list_pk>/update', views.WordListUpdateView.as_view(), name='word-list-update'),
-    path('list/<int:word_list_pk>/delete', views.WordListDeleteView.as_view(), name='word-list-delete')
+    path('list/<int:pk>/delete', views.WordListDeleteView.as_view(), name='word-list-delete')
 ]

@@ -12,6 +12,7 @@ from .forms import *
 
 from django.db import transaction
 from django.db.models import Case, When, Value, F, ExpressionWrapper, FloatField, Max
+from django.db.models.functions import Cast
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s', level=logging.DEBUG)
@@ -23,9 +24,9 @@ def start_lesson(request) -> None:
     tmp_word_queryset = Word.objects.filter(created_by=request.user.id)
     tmp_word_queryset = tmp_word_queryset.annotate(
         correct_ratio=Case(
-            When(times_asked=0, then=Value(0)), # times_asked=0の場合はcorrect_ratio=0にする
+            When(times_asked=0, then=Value(0.0)), # times_asked=0の場合はcorrect_ratio=0にする
             default=ExpressionWrapper(
-                F('times_correct') / F('times_asked'),
+                Cast(F('times_correct'), FloatField()) / Cast(F('times_asked'), FloatField()),
                 output_field=FloatField()
             ),
             output_field=FloatField()
@@ -71,7 +72,7 @@ def index_view(request):
         form = LessonConfigForm()
         max_value = Word.objects.filter(created_by=request.user.id).count()
         form.fields['max_lesson_number'].max_value = max_value
-        form.fields['max_lesson_number'].initial = max_value
+        # form.fields['max_lesson_number'].initial = max_value
         context = {
             'form': form,
             'max_value': max_value,
@@ -175,6 +176,8 @@ class WordListCreateView(LoginRequiredMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['list_name'].widget.attrs['autofocus'] = True
+        form.fields['list_name'].widget.attrs['class'] = 'form-control'
+        form.label_suffix = ''
         return form
 
     def form_valid(self, form):
@@ -268,7 +271,7 @@ class WordCreateView(LoginRequiredMixin, CreateView):
     
     def get_success_url(self):
         word_list_pk = self.request.session.get('word_list_pk')
-        return reverse_lazy('word-create', kwargs={'word_list_pk': word_list_pk})
+        return reverse('word-create', kwargs={'word_list_pk': word_list_pk})
     
 class WordUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'typewordsapp/Word_update.html'

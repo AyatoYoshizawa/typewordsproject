@@ -4,7 +4,7 @@ class LessonConfigForm(forms.Form):
     max_lesson_number = forms.IntegerField(
         label='出題数',
         label_suffix='',
-        initial=None,
+        initial=10,
         min_value=1,
         max_value=None, 
         widget=forms.NumberInput(attrs={

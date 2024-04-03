@@ -3,10 +3,13 @@
 {% block title %}単語リスト作成{% endblock %}
 
 {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="作成する">
-    </form>
-    <a href="{% url 'word-list-list' %}">一覧へ戻る</a>
+    <div class="p-4 my-5 align-items-center justify-content-center">
+        <form method="post">
+            {% csrf_token %}
+            <label class="my-2">リストの名前</label>
+            <input class="form-control bg-soft-dark text-light" name="list_name" placeholder="リストの名前を入力してください">
+            <button type="submit" class="btn btn-primary my-3">変更する</button>
+        </form>
+        <a class="btn btn-primary my-5" href="{% url 'word-list-list' %}">一覧へ戻る</a>
+    </div>
 {% endblock content%}

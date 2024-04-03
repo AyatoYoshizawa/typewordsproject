@@ -3,9 +3,13 @@
 {% block title %}単語削除{% endblock %}
 
 {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit">{{ object.english }}を削除する</button>
-    </form>
-    <a href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧に戻る</a>
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="p-4 align-self-center">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger my-3">{{ object.english }}を削除する</button>
+        </form>
+        <a class="btn btn-primary my-5" href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧に戻る</a>
+    </div>
+</div>
 {% endblock content %}

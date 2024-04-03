@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <h1>結果</h1>
+<a id="index-link" class="btn btn-primary my-5 mx-3"  href="{% url 'index' %}">トップに戻る</a>
     {% for item in item_list %}
-        <p>{{ item.lesson.answer }}</p>
-        <p>{{ item.word.english }}</p>
-        <p>{{ item.word.japanese }}</p>
+    <div class="card bg-dark text-light">
+        <div class="card-header">
+            <h5 class="card-title">{{ item.word.japanese }}</h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text">回答: {{ item.lesson.answer }}</p>
+            <p class="car-text">正答: {{ item.word.english}}</p>
+        </div>
+    </div>
     {% endfor %}
-    <a href="{% url 'index' %}">トップに戻る</a>
+    <a class="btn btn-primary my-5 mx-3"  href="{% url 'index' %}">トップに戻る</a>
 {% endblock content %}

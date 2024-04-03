@@ -3,10 +3,19 @@
 {% block title %}単語修正{% endblock %}
 
 {% block content %}
+<div class="p-4 my-5 align-items-center justify-content-center">
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">修正する</button>
+        <div class="form-group">
+            <label class="my-2">英単語</label>
+            <input class="form-control bg-soft-dark text-light" name="english" value="{{ object.english }}" autofocus>
+        </div>
+        <div class="form-group">
+            <label class="my-2">日本語訳</label>
+            <input class="form-control bg-soft-dark text-light" name="japanese" value="{{ object.japanese }}">
+        </div>
+        <button type="submit" class="btn btn-primary my-3">変更する</button>
     </form>
-    <a href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧へ戻る</a>
+    <a class="btn btn-primary my-5" href="{% url 'word-list' word_list_pk=word_list_pk %}">一覧へ戻る</a>
+</div>
 {% endblock content %}

@@ -2,15 +2,14 @@
 {% load static %}
 
 {% block content %}
-<h1 class="text-center mt-5">トップページ</h1>
-    <div class="row justify-content-center align-items-center">
-        <div class="col-md-2">
+    <div class="row justify-content-center align-items-center my-5">
+        <div class="col-sm-2">
             <a id='word-list-list-link' href="{% url 'word-list-list'%}" class="btn btn-primary btn-lg">単語を登録 (C)</a>
             <form method="post">
-                <button id="start-link" type="submit" class="btn btn-primary btn-lg my-3 ">単語テストを始める (Enter)</button>
-                <p class="mt-5">出題数の上限: {{ max_value }}</p>
+                <button id="start-link" type="submit" class="btn btn-primary btn-lg my-3 ">テストを始める (Enter)</button>
                 {% csrf_token %}
                 {{ form.as_p }}
+                <p class="mt-1">出題数の上限: {{ max_value }}</p>
             </form>
         </div>
     </div>

@@ -3,21 +3,27 @@
 {% block title %}単語一覧{% endblock %}
 
 {% block content %}
-    <a href="{% url 'word-list-list' %}"class="btn btn-primary btn-lg my-5">単語リスト一覧に戻る</a>
-    <p>{{ selected_word_list.list_name }}</p>
-    <a href="{% url 'word-list-update' word_list_pk=selected_word_list.pk %}" class="btn btn-primary btn-lg my-5">リストの名前を変更</a>
-    <a href="{% url 'word-create' word_list_pk=selected_word_list.pk %}"class="btn btn-primary btn-lg my-5">単語を追加</a>
-
+    <h1 class="h1 text-center my-5">{{ selected_word_list.list_name }}</h1>
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <a href="{% url 'word-list-list' %}"class="btn btn-primary btn-lg my-5">単語リスト一覧に戻る</a>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'word-list-update' word_list_pk=selected_word_list.pk %}" class="btn btn-primary btn-lg my-5">リストの名前を変更</a>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'word-create' word_list_pk=selected_word_list.pk %}"class="btn btn-primary btn-lg my-5">単語を追加</a>
+        </div>
+    </div>
     {% for object in object_list %}
     <div class="card bg-dark text-light">
         <div class="card-header">
-            {{ object.id }}
+            <h5 class="card-title">{{ object.english }}</h5>
         </div>
         <div class="card-body">
-            <h5 class="card-title">{{ object.english }}</h5>
             <p class="card-text">{{ object.japanese }}</p>
-            <a href="{% url 'word-update' object.pk %}" class="btn btn-primary">編集する</a>
-            <a href="{% url 'word-delete' object.pk %}" class="btn btn-primary">削除する</a>
+            <a href="{% url 'word-update' object.pk %}" class="btn btn-primary">編集</a>
+            <a href="{% url 'word-delete' object.pk %}" class="btn btn-primary">削除</a>
         </div>
     </div>
     {% endfor %}

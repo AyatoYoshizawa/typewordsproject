@@ -14,6 +14,7 @@
         </div>
         <div class="card-body">
             <a href="{% url 'word-list' word_list_pk=object.pk %}" class="btn btn-primary btn-sm">編集</a>
+            <a href="{% url 'word-list-delete' pk=object.pk %}" class="btn btn-primary btn-sm">削除</a>
         </div>
     </div>
     {% endfor %}
